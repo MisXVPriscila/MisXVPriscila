@@ -1,79 +1,50 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
-    // Core Elements
+            
+    // 1. Envelope Animation and Transition Logic
     const envelopeWrapper = document.getElementById('envelope-wrapper');
     const envelope = document.getElementById('envelope');
     const mainContent = document.getElementById('main-content');
-    
-    // Audio Player Elements
     const bgMusic = document.getElementById('bg-music');
-    const musicToggle = document.getElementById('music-toggle');
-    const musicIcon = document.getElementById('music-icon');
-    let isMusicPlaying = false;
 
-    // 1. Interactive Envelope & Music Start Logic
     envelope.addEventListener('click', () => {
-        // Run animation
+        // Add open class to trigger CSS animation on the flap and letter
         envelope.classList.add('open');
         
-        // Start playing music smoothly at a low luxurious volume
-        bgMusic.volume = 0.2;
-        bgMusic.play().then(() => {
-            isMusicPlaying = true;
-            musicIcon.className = 'fa-solid fa-volume-high'; // Sound icon
-        }).catch(e => {
-            // Failsafe in case browser explicitly blocks media without interaction
-            console.log('Audio autoplay prevented.', e);
-            isMusicPlaying = false;
-            musicIcon.className = 'fa-solid fa-volume-xmark'; // Muted icon
-        });
+        // Attempt to play background music (often blocked by browsers if no user interaction, but click fixes it)
+        bgMusic.volume = 0.3; // keep it soft
+        bgMusic.play().catch(e => console.log('Audio autoplay blocked or unavailable.', e));
 
-        // Extended timings for smoother feel
+        // Smoothly transition from the envelope screen to the main content
         setTimeout(() => {
-            envelopeWrapper.style.opacity = '0'; // Envelope container begins to fade
+            envelopeWrapper.style.opacity = '0';
             
             setTimeout(() => {
-                envelopeWrapper.style.display = 'none'; // Erase envelope object
-                mainContent.style.display = 'block'; // Make content displayable
-                musicToggle.style.display = 'flex'; // Reveal the floating music widget
+                envelopeWrapper.style.display = 'none';
+                mainContent.style.display = 'block';
                 
-                // Trigger reflow calculation
-                void mainContent.offsetWidth; 
-                
-                // Allow CSS transition to gracefully show the content layer
+                // Force browser reflow to ensure the scaling transition occurs correctly
+                void mainContent.offsetWidth;
                 mainContent.classList.add('visible');
                 
-                // Activate observer on completely loaded content
+                // Initialize intersection observer for scrolling elements now that they are visible
                 setupIntersectionObserver();
-            }, 1500); // Fading time
-        }, 1800); // Waiting after opening flap to start fade
+            }, 1000); // duration of the background fade-out
+        }, 1300); // delay allowing the opening animation to play
     });
 
-    // Handle Custom Music Player Button
-    musicToggle.addEventListener('click', () => {
-        if (isMusicPlaying) {
-            bgMusic.pause();
-            musicIcon.className = 'fa-solid fa-volume-xmark';
-        } else {
-            bgMusic.play();
-            musicIcon.className = 'fa-solid fa-volume-high';
-        }
-        isMusicPlaying = !isMusicPlaying;
-    });
-
-    // 2. High-Performance Intersection Observer for Scroll Tracking
+    // 2. Intersection Observer for Scroll Fade-Ins
     function setupIntersectionObserver() {
         const elementsToFadeIn = document.querySelectorAll('.fade-in-element');
         const observerOptions = {
-            threshold: 0.1, // Trigger earlier
-            rootMargin: "0px 0px -50px 0px"
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px" // triggers slightly before hitting the bottom
         };
 
         const appearOnScroll = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); // Memory optimization, unobserve when triggered
+                    observer.unobserve(entry.target); // Stop observing once it has faded in
                 }
             });
         }, observerOptions);
@@ -81,8 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
         elementsToFadeIn.forEach(el => appearOnScroll.observe(el));
     }
 
-    // 3. Perfect Sync Countdown Logic (July 11, 2026 at 20:00)
-    const eventDateStr = "2026-07-11T20:00:00"; 
+    // 3. Dynamic Countdown Timer Logic
+    // Modify this date to match the event's actual date (Year, Month[0-11], Day, Hour, Minute)
+    // Using placeholder logic set in November 2026.
+    const eventDateStr = "2026-11-25T20:00:00"; 
     const eventDate = new Date(eventDateStr).getTime();
 
     const updateCountdown = () => {
@@ -90,39 +63,42 @@ document.addEventListener("DOMContentLoaded", () => {
         const distance = eventDate - now;
 
         if (distance < 0) {
+            // Event has passed or is happening
             const timerContainer = document.getElementById("timer");
             if(timerContainer) {
-                // Ensure typography syncs with CSS
-                timerContainer.innerHTML = "<h3 style='font-family: \"Playfair Display\", serif; font-size: 1.5rem; font-weight: 400; color: var(--text-dark); letter-spacing: 2px;'>¡El gran momento ha llegado!</h3>";
+                timerContainer.innerHTML = "<h3 style='font-family: \"Playfair Display\", serif; font-size: 2rem; color: var(--primary-dark);'>¡El gran día ha llegado!</h3>";
             }
             return;
         }
 
+        // Time calculations for days, hours, minutes, and seconds
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Fill strings to strictly enforce 00 padding look on singles digits
+        // Update DOM
         document.getElementById("days").innerText = days.toString().padStart(2, '0');
         document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
         document.getElementById("mins").innerText = minutes.toString().padStart(2, '0');
         document.getElementById("secs").innerText = seconds.toString().padStart(2, '0');
     };
 
-    // Keep it rolling per second
+    // Run interval every second
     setInterval(updateCountdown, 1000);
-    updateCountdown(); // Execute immediately so user never sees 00
+    updateCountdown(); // Initialize immediately to avoid 1-second delay
 
-    // 4. Elegantly Restrained Particle Canvas Loop
+    // 4. Lightweight Sparkles Effect on Canvas
     const canvas = document.getElementById('sparkles');
     const ctx = canvas.getContext('2d');
     let particles = [];
 
+    // Helper to resize canvas properly based on window size
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
+
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -130,20 +106,29 @@ document.addEventListener("DOMContentLoaded", () => {
         constructor() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 1.5 + 0.2; // Keep sizes minimalist
-            this.speedY = Math.random() * 0.3 + 0.1; // Slow drift
-            this.opacity = Math.random() * 0.4 + 0.1;
-            this.color = `rgba(209, 191, 174, ${this.opacity})`; // Champagne tint
+            this.size = Math.random() * 2 + 0.5; // Radius between 0.5 and 2.5
+            this.speedY = Math.random() * 0.5 + 0.2; // Drift upwards
+            this.opacity = Math.random() * 0.6 + 0.2;
+            // Slightly varied subtle colors (gold-ish and soft pinks)
+            const isGold = Math.random() > 0.5;
+            if (isGold) {
+                this.color = `rgba(212, 175, 55, ${this.opacity})`; // Gold
+            } else {
+                this.color = `rgba(201, 138, 155, ${this.opacity})`; // Pink
+            }
         }
+
         update() {
-            this.y -= this.speedY; // Upward drift
-            this.x += Math.sin(this.y * 0.005) * 0.3; // Light floating curve logic
+            this.y -= this.speedY;
+            this.x += Math.sin(this.y * 0.01) * 0.5; // Subtle horizontal drift
+            
+            // Reset if it goes off screen
             if (this.y < -10) {
-                // Return to bottom on overflow 
                 this.y = canvas.height + 10;
                 this.x = Math.random() * canvas.width;
             }
         }
+
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -152,25 +137,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Spawn a limited amount for aesthetic cleanups 
     function initParticles() {
         particles = [];
-        const particleCount = window.innerWidth < 768 ? 15 : 30; // Further reduced quantity
+        // Responsively reduce particle count for lower-end devices / mobile
+        const particleCount = window.innerWidth < 768 ? 25 : 60;
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
     }
 
     function animateParticles() {
-        // Clear full map per tick
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < particles.length; i++) {
             particles[i].update();
             particles[i].draw();
         }
-        requestAnimationFrame(animateParticles); // Browser GPU tick optimized caller loop
+        requestAnimationFrame(animateParticles);
     }
 
     initParticles();
     animateParticles();
+    
+    // Re-init particles on orientation change or aggressive resize
+    window.addEventListener('resize', () => {
+        if(window.innerWidth !== canvas.width) {
+            initParticles();
+        }
+    });
 });

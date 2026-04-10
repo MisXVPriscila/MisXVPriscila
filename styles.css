@@ -3,10 +3,10 @@
     --primary-color: #dfabbc;      /* Soft pink */
     --primary-dark: #c98a9b;       /* Darker pink */
     --accent-color: #d4af37;       /* Gold */
-    --bg-light: #fffcfd;           /* Very light pink/white */
-    --bg-secondary: #fdf5f7;       /* Soft pink background */
-    --text-dark: #4a4a4a;          /* Dark gray for contrast */
-    --text-light: #7a7a7a;         /* Lighter gray */
+    --bg-light: #0B1325;           /* Dark Navy Blue */
+    --bg-secondary: #12203A;       /* Soft Navy background */
+    --text-dark: #f0f0f0;          /* Light color for contrast */
+    --text-light: #cccccc;         /* Lighter gray */
 }
 
 /* Essential Reset & Base Styling */
@@ -45,7 +45,7 @@ p {
 #envelope-wrapper {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle, #ffffff 0%, #fae6ec 100%);
+    background: radial-gradient(circle, #1a2a4b 0%, #0b1325 100%);
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -216,7 +216,7 @@ section {
 }
 
 /* Background Textures/Gradients for sections */
-.bg-white { background-color: #ffffff; }
+.bg-white { background-color: var(--bg-light); }
 .bg-soft { background-color: var(--bg-secondary); }
 
 /* 1. Hero Section */
@@ -309,7 +309,7 @@ section {
 
 .detail-card {
     padding: 50px 30px;
-    background-color: #fff;
+    background-color: var(--bg-secondary);
     border-radius: 20px;
     box-shadow: 0 15px 35px rgba(201, 138, 155, 0.08);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
@@ -381,7 +381,7 @@ section {
 }
 
 .time-box {
-    background-color: #fff;
+    background-color: var(--bg-secondary);
     padding: 25px 20px;
     border-radius: 15px;
     min-width: 120px;
@@ -415,7 +415,7 @@ section {
 .confirmation-box {
     max-width: 700px;
     margin: 0 auto;
-    background: #fff;
+    background: var(--bg-secondary);
     padding: 50px 40px;
     border-radius: 20px;
     box-shadow: 0 15px 35px rgba(201, 138, 155, 0.1);

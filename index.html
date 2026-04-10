@@ -666,15 +666,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const envelopeWrapper = document.getElementById('envelope-wrapper');
     const envelope = document.getElementById('envelope');
     const mainContent = document.getElementById('main-content');
+    
+    let audioStarted = false;
 
-    envelope.addEventListener('click', () => {
+    const startInvitation = () => {
+        if(audioStarted) return; // Evitar que se ejecute dos veces en móviles que disparan click y touch
+        audioStarted = true;
+        
         envelope.classList.add('open');
         
-        
+        // Trigger de YouTube
         if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
             try {
-                ytPlayer.setVolume(50);
+                ytPlayer.setVolume(70);
                 ytPlayer.playVideo();
+                // A veces iOS requiere unMute en la misma interacción
+                ytPlayer.unMute(); 
             } catch(e) {
                 console.log("Error intentando reproducir YouTube:", e);
             }
@@ -690,7 +697,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 setupIntersectionObserver();
             }, 1000); 
         }, 1300);
-    });
+    };
+
+    // Agregar ambos eventos: click y touchstart para mayor compatibilidad móvil
+    envelope.addEventListener('click', startInvitation);
+    envelope.addEventListener('touchstart', startInvitation, { passive: true });
 
     // 2. Intersection Observer for Scroll Fade-Ins
     function setupIntersectionObserver() {
